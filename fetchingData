@@ -1,0 +1,36 @@
+import requests
+import csv
+
+def fetch_stock_data(symbol, api_key):
+    url = f"https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol={symbol}&apikey={api_key}"
+    response = requests.get(url)
+    if response.status_code == 200:
+        return response.json()
+    else:
+        print("Failed to fetch data from Alpha Vantage API:", response.status_code)
+        return None
+
+
+def write_stock_data_to_csv(data, filename):
+    with open(filename, 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(["Date", "Open", "High", "Low", "Close", "Volume"])
+        for date, values in data['Time Series (Daily)'].items():
+            writer.writerow(
+                [date, values['1. open'], values['2. high'], values['3. low'], values['4. close'], values['5. volume']])
+
+
+if __name__ == "__main__":
+    symbol = "AAPL"  # Example: Apple Inc. stock
+    api_key = "your_API_key"
+    csv_filename = "stock_data.csv"
+
+    # Fetching stock data using Alpha Vantage API
+    stock_data = fetch_stock_data(symbol, api_key)
+
+    if stock_data:
+        # Writing data to CSV file
+        write_stock_data_to_csv(stock_data, csv_filename)
+        print("Stock data successfully written to", csv_filename)
+    else:
+        print("No stock data fetched from the API. CSV file not created.")
